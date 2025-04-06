@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cinder Spires RPG</title>
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Global styles from the React component */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+            overflow-x: hidden;
+            margin: 0; /* Ensure no default body margin */
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(30, 0, 0, 0.3), rgba(0, 0, 0, 0.8)), url('https://www.transparenttextures.com/patterns/dark-matter.png');
+            opacity: 0.15; z-index: -1; pointer-events: none;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #b91c1c; }
+        html { scroll-behavior: smooth; }
+        .result-box strong { color: #f87171; }
+        .disclaimer {
+            font-size: 0.8rem; color: #a3a3a3; border-left: 3px solid #dc2626;
+            padding-left: 0.75rem; margin-top: 1rem; font-style: italic;
+        }
+        /* Add other global styles if needed */
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Make sure React and useState/useEffect/useCallback are available
+        const { useState, useEffect, useCallback } = React;
+
+        // --- Helper Functions ---
+        const getAttributeModifier = (attributeValue) => { /* ... copy from previous code ... */
+            const value = parseInt(attributeValue, 10);
+            return isNaN(value) ? 0 : value - 5;
+        };
+        const roll2d6 = () => { /* ... copy from previous code ... */
+            const die1 = Math.floor(Math.random() * 6) + 1;
+            const die2 = Math.floor(Math.random() * 6) + 1;
+            return { total: die1 + die2, rolls: [die1, die2] };
+        };
+
+        // --- Reusable Components ---
+        const Card = ({ children, className = '', aosDelay = "0" }) => ( /* ... copy from previous code ... */
+             <div
+                className={`bg-neutral-800/70 border border-red-800/50 rounded-lg p-6 shadow-lg transition duration-300 hover:shadow-red-500/20 hover:border-red-700/70 ${className}`}
+                data-aos="fade-up"
+                data-aos-delay={aosDelay}
+            >
+                {children}
+            </div>
+        );
+        const SectionHeading = ({ children }) => ( /* ... copy from previous code ... */
+             <h2 className="text-3xl font-bold mb-6 text-red-500 border-b-2 border-red-700 pb-2 inline-block">
+                {children}
+            </h2>
+        );
+        const CalculatorInput = ({ id, label, type = "number", value, onChange, min, max, step = "1" }) => ( /* ... copy from previous code ... */
+            <div>
+                <label htmlFor={id} className="block mb-1 text-sm font-medium text-neutral-400">{label}</label>
+                <input
+                    type={type}
+                    id={id}
+                    value={value}
+                    onChange={onChange}
+                    min={min}
+                    max={max}
+                    step={step}
+                    className="w-full p-2 rounded bg-neutral-700 border border-neutral-600 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50 outline-none transition"
+                />
+            </div>
+        );
+        const CalculatorButton = ({ children, onClick }) => ( /* ... copy from previous code ... */
+            <button
+                onClick={onClick}
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition duration-300 transform hover:scale-105"
+            >
+                {children}
+            </button>
+        );
+        const ResultBox = ({ children }) => ( /* ... copy from previous code ... */
+            <div className="result-box mt-6 bg-neutral-900/60 border border-red-800/50 p-4 rounded-lg space-y-2 text-neutral-300 min-h-[100px]">
+                {children}
+            </div>
+        );
+
+
+        // --- Page Components ---
+        const HomePage = ({ setCurrentPage }) => { /* ... copy from previous code ... */ };
+        const WorldPage = () => { /* ... copy from previous code ... */ };
+        const MechanicsPage = () => { /* ... copy from previous code ... */ };
+        const CombatPage = () => {
+             // State for Character Combat Calculator
+            const [charAttackerSkill, setCharAttackerSkill] = useState(5);
+            const [charAttackerAttribute, setCharAttackerAttribute] = useState(6);
+            const [charAttackerMight, setCharAttackerMight] = useState(6);
+            const [charWeaponDamage, setCharWeaponDamage] = useState(4);
+            const [charAttackerMods, setCharAttackerMods] = useState(0);
+            const [charDefenderAgility, setCharDefenderAgility] = useState(5);
+            const [charDefenderBonus, setCharDefenderBonus] = useState(1);
+            const [charDefenderSoak, setCharDefenderSoak] = useState(2);
+            const [charCombatResult, setCharCombatResult] = useState(null);
+
+            // State for Airship Combat Calculator
+            const [shipGunnery, setShipGunnery] = useState(4);
+            const [shipOfficerMod, setShipOfficerMod] = useState(1);
+            const [shipAttackBonus, setShipAttackBonus] = useState(1);
+            const [shipCannonDamage, setShipCannonDamage] = useState(10);
+            const [shipPowerBonus, setShipPowerBonus] = useState(2);
+            const [shipAttackMods, setShipAttackMods] = useState(0);
+            const [shipPilotMod, setShipPilotMod] = useState(1);
+            const [shipDefenseBonus, setShipDefenseBonus] = useState(1);
+            const [shipArmor, setShipArmor] = useState(5);
+            const [shipCoverBonus, setShipCoverBonus] = useState(0);
+            const [shipCombatResult, setShipCombatResult] = useState(null);
+
+            // Calculation Functions
+            const calculateCharacterCombat = useCallback(() => { /* ... copy from previous code ... */ }, [charAttackerSkill, charAttackerAttribute, charAttackerMight, charWeaponDamage, charAttackerMods, charDefenderAgility, charDefenderBonus, charDefenderSoak]);
+            const calculateAirshipCombat = useCallback(() => { /* ... copy from previous code ... */ }, [shipGunnery, shipOfficerMod, shipAttackBonus, shipCannonDamage, shipPowerBonus, shipAttackMods, shipPilotMod, shipDefenseBonus, shipArmor, shipCoverBonus]);
+
+            // Return JSX for CombatPage
+            return ( /* ... copy JSX structure from previous CombatPage component ... */ );
+         };
+        const ArchetypesPage = () => { /* ... copy from previous code ... */ };
+        const ShipsPage = () => { /* ... copy from previous code ... */ };
+
+        // --- Header Component ---
+        const Header = ({ currentPage, setCurrentPage }) => { /* ... copy from previous code ... */ };
+
+        // --- Footer Component ---
+        const Footer = () => { /* ... copy from previous code ... */ };
+
+        // --- Main App Component ---
+        // Remove 'export default' as it's not needed in this script tag context
+        function App() {
+            const [currentPage, setCurrentPage] = useState('home');
+
+            useEffect(() => {
+                if (typeof AOS !== 'undefined') {
+                    AOS.init({ once: true, duration: 600, easing: 'ease-in-out' });
+                }
+            }, []); // Initialize AOS only once
+
+             useEffect(() => {
+                 // Refresh AOS when page changes to handle new elements
+                 if (typeof AOS !== 'undefined') {
+                    // Use setTimeout to ensure DOM updates before refreshing AOS
+                    setTimeout(() => AOS.refresh(), 100);
+                 }
+                 // Scroll to top on page change
+                 window.scrollTo(0, 0);
+            }, [currentPage]);
+
+            const renderPage = () => { /* ... copy from previous code ... */ };
+
+            return (
+                 // Use React.Fragment instead of <> for Babel compatibility if needed
+                 React.createElement(React.Fragment, null,
+                    React.createElement(Header, { currentPage: currentPage, setCurrentPage: setCurrentPage }),
+                    React.createElement("main", { className: "container mx-auto px-4 sm:px-6 py-12 min-h-screen" }, renderPage()),
+                    React.createElement(Footer, null)
+                 )
+            );
+        }
+
+        // --- Render the App ---
+        // Use ReactDOM.createRoot for React 18+
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(React.createElement(App));
+
+    </script>
+</body>
+</html>
