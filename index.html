@@ -11,6 +11,22 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              // Example: Define custom colors if needed, otherwise defaults work
+              // 'custom-red': '#dc2626',
+            },
+            fontFamily: {
+              // Ensure Inter is recognized if used explicitly beyond body
+              sans: ['Inter', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
 
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -20,13 +36,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Global styles from the React component */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0a0a0a;
             color: #e5e5e5;
             overflow-x: hidden;
-            margin: 0; /* Ensure no default body margin */
+            margin: 0;
         }
         body::before {
             content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -38,48 +53,51 @@
         ::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #b91c1c; }
         html { scroll-behavior: smooth; }
-        .result-box strong { color: #f87171; }
+        .result-box strong { color: #f87171; } /* Tailwind text-red-400 */
         .disclaimer {
-            font-size: 0.8rem; color: #a3a3a3; border-left: 3px solid #dc2626;
-            padding-left: 0.75rem; margin-top: 1rem; font-style: italic;
+            font-size: 0.8rem; color: #a3a3a3; /* Tailwind text-neutral-400 */
+            border-left: 3px solid #dc2626; /* Tailwind border-red-600 */
+            padding-left: 0.75rem; /* Tailwind pl-3 */
+            margin-top: 1rem; /* Tailwind mt-4 */
+            font-style: italic;
         }
-        /* Add other global styles if needed */
+        /* Style for active nav link */
+        .nav-link-active {
+             color: #f87171; /* text-red-400 */
+             font-weight: 600; /* font-semibold */
+             background-color: rgba(220, 38, 38, 0.2); /* bg-red-900/30 */
+        }
+        .nav-link-inactive {
+            color: #e5e5e5; /* text-neutral-300 */
+        }
+        .nav-link-inactive:hover {
+            color: #ef4444; /* hover:text-red-500 */
+            background-color: rgba(51, 51, 51, 0.5); /* hover:bg-neutral-700/50 */
+        }
+
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
+        // Make React functions available directly
+        const { useState, useEffect, useCallback, Fragment } = React; // Added Fragment
+
         // --- Helper Functions ---
-        
-        /**
-         * Calculates the attribute modifier based on the attribute score.
-         * ASSUMPTION: Modifier = Attribute Score - 5.
-         * @param {number|string} attributeValue - The attribute score.
-         * @returns {number} The calculated modifier.
-         */
         const getAttributeModifier = (attributeValue) => {
             const value = parseInt(attributeValue, 10);
             return isNaN(value) ? 0 : value - 5;
         };
-        
-        /**
-         * Simulates rolling 2 six-sided dice (2d6).
-         * @returns {{total: number, rolls: number[]}} An object containing the total and individual rolls.
-         */
         const roll2d6 = () => {
             const die1 = Math.floor(Math.random() * 6) + 1;
             const die2 = Math.floor(Math.random() * 6) + 1;
             return { total: die1 + die2, rolls: [die1, die2] };
         };
-        
+
         // --- Reusable Components ---
-        
-        /**
-         * Card Component for displaying distinct blocks of information.
-         */
         const Card = ({ children, className = '', aosDelay = "0" }) => (
-            <div
+             <div
                 className={`bg-neutral-800/70 border border-red-800/50 rounded-lg p-6 shadow-lg transition duration-300 hover:shadow-red-500/20 hover:border-red-700/70 ${className}`}
                 data-aos="fade-up"
                 data-aos-delay={aosDelay}
@@ -87,19 +105,11 @@
                 {children}
             </div>
         );
-        
-        /**
-         * Section Heading Component.
-         */
         const SectionHeading = ({ children }) => (
              <h2 className="text-3xl font-bold mb-6 text-red-500 border-b-2 border-red-700 pb-2 inline-block">
                 {children}
             </h2>
         );
-        
-        /**
-         * Calculator Input Component.
-         */
         const CalculatorInput = ({ id, label, type = "number", value, onChange, min, max, step = "1" }) => (
             <div>
                 <label htmlFor={id} className="block mb-1 text-sm font-medium text-neutral-400">{label}</label>
@@ -115,10 +125,6 @@
                 />
             </div>
         );
-        
-        /**
-         * Calculator Button Component.
-         */
         const CalculatorButton = ({ children, onClick }) => (
             <button
                 onClick={onClick}
@@ -127,21 +133,14 @@
                 {children}
             </button>
         );
-        
-        /**
-         * Result Display Box Component.
-         */
         const ResultBox = ({ children }) => (
             <div className="result-box mt-6 bg-neutral-900/60 border border-red-800/50 p-4 rounded-lg space-y-2 text-neutral-300 min-h-[100px]">
                 {children}
             </div>
         );
-        
+
+
         // --- Page Components ---
-        
-        /**
-         * Home Page Component: Overview and Introduction.
-         */
         const HomePage = ({ setCurrentPage }) => (
             <div data-aos="fade-in">
                 {/* Hero Section */}
@@ -157,7 +156,7 @@
                         Explore the World
                     </button>
                 </section>
-        
+
                 {/* Quick Links/Overview */}
                 <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
                      <Card aosDelay="100">
@@ -178,66 +177,52 @@
                 </section>
             </div>
         );
-        
-        /**
-         * World Page Component: Details about the setting.
-         */
+
         const WorldPage = () => (
             <div data-aos="fade-in">
                 <SectionHeading>The World of the Spires</SectionHeading>
                 <p className="text-lg mb-6 text-neutral-300 leading-relaxed">
                     The surface world is lost, claimed long ago by impenetrable mists concealing deadly predators and ancient secrets. Humanity survives aloft, dwelling in colossal spires of stone and crystal that pierce the clouds like the fingers of giants.
                 </p>
-        
-                <Card className="mb-8">
+                <Card className="mb-8" aosDelay="100">
                     <h3 className="text-2xl font-semibold mb-3 text-red-400">The Spires</h3>
                     <p className="text-neutral-300 leading-relaxed">These immense structures are humanity's bastions against the dangers below. Each Spire, or cluster of Spires, forms a city-state with its own culture, laws, and ruling powers. Life is stratified, with the wealthy and powerful residing higher up, while the lower levels teem with industry, trade, and the less fortunate.</p>
                 </Card>
-        
-                <Card className="mb-8">
+                <Card className="mb-8" aosDelay="200">
                     <h3 className="text-2xl font-semibold mb-3 text-red-400">The Mists</h3>
                     <p className="text-neutral-300 leading-relaxed">The swirling, toxic mists that blanket the surface are more than just an environmental hazard. They hide monstrous creatures mutated by strange energies and conceal the ruins of whatever civilization existed before. Venturing into the mists is perilous, often fatal, yet sometimes necessary for resources or forgotten knowledge.</p>
                 </Card>
-        
-                 <Card className="mb-8">
+                 <Card className="mb-8" aosDelay="300">
                     <h3 className="text-2xl font-semibold mb-3 text-red-400">Airships & Ether-Crystals</h3>
                     <p className="text-neutral-300 leading-relaxed">Life and commerce depend on majestic airships, powered by luminous ether-crystals mined from deep within the Spires or salvaged from dangerous locations. These vessels range from nimble scouting craft to massive warships and heavily laden merchant barges. Control of the skies means control of trade routes and influence.</p>
                 </Card>
-        
-                <Card>
+                <Card aosDelay="400">
                     <h3 className="text-2xl font-semibold mb-3 text-red-400">Factions & Politics</h3>
                     <p className="text-neutral-300 leading-relaxed">Powerful Noble Houses engage in covert wars and political maneuvering behind masks of civility. Ambitious Merchant Guilds amass fortunes through cunning negotiation and control of vital resources. Scholarly Orders pursue ancient mysteries, often meddling with forces best left undisturbed. The Spirearch's Guard and Fleet Marines maintain order and defend against external threats, while independent Aeronauts carve their own paths through the boundless skies.</p>
                 </Card>
             </div>
         );
-        
-        /**
-         * Core Mechanics Page Component: Attributes, Skills, Checks.
-         */
+
         const MechanicsPage = () => (
             <div data-aos="fade-in">
                 <SectionHeading>Core Mechanics</SectionHeading>
                 <p className="text-lg mb-8 text-neutral-300 leading-relaxed">
                     Actions and challenges in The Cinder Spires are resolved using a combination of character attributes, skills, and dice rolls.
                 </p>
-        
-                {/* Attributes Section */}
                 <h3 className="text-2xl font-semibold mb-4 text-red-400">Core Attributes</h3>
                 <p className="mb-6 text-neutral-400">Each character has 7 core attributes, ranging from 1-10. They form the foundation of abilities and influence nearly all checks. The modifier is generally calculated as (Attribute - 5).</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Might</h4><p>Physical strength, force, grappling.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Endurance</h4><p>Stamina, resistance to pain, wound thresholds.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Agility</h4><p>Speed, balance, accuracy, dodging.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Intellect</h4><p>Logic, science, technical knowledge.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Willpower</h4><p>Focus, mental resilience, Etherialist stability.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Awareness</h4><p>Perception, spatial awareness, reaction timing.</p></Card>
-                     <Card className="md:col-span-2 lg:col-span-1"><h4 className="font-semibold text-xl text-red-500 mb-1">Presence</h4><p>Charm, leadership, negotiation, social impact.</p></Card>
+                    <Card aosDelay="100"><h4 className="font-semibold text-xl text-red-500 mb-1">Might</h4><p>Physical strength, force, grappling.</p></Card>
+                    <Card aosDelay="150"><h4 className="font-semibold text-xl text-red-500 mb-1">Endurance</h4><p>Stamina, resistance to pain, wound thresholds.</p></Card>
+                    <Card aosDelay="200"><h4 className="font-semibold text-xl text-red-500 mb-1">Agility</h4><p>Speed, balance, accuracy, dodging.</p></Card>
+                    <Card aosDelay="250"><h4 className="font-semibold text-xl text-red-500 mb-1">Intellect</h4><p>Logic, science, technical knowledge.</p></Card>
+                    <Card aosDelay="300"><h4 className="font-semibold text-xl text-red-500 mb-1">Willpower</h4><p>Focus, mental resilience, Etherialist stability.</p></Card>
+                    <Card aosDelay="350"><h4 className="font-semibold text-xl text-red-500 mb-1">Awareness</h4><p>Perception, spatial awareness, reaction timing.</p></Card>
+                     <Card className="md:col-span-2 lg:col-span-1" aosDelay="400"><h4 className="font-semibold text-xl text-red-500 mb-1">Presence</h4><p>Charm, leadership, negotiation, social impact.</p></Card>
                 </div>
-        
-                {/* Skills Section (Placeholder - PDF doesn't list all skills) */}
                  <h3 className="text-2xl font-semibold mb-4 text-red-400">Skills</h3>
                  <p className="mb-6 text-neutral-400">Skills represent specific training or aptitudes. They are ranked from 1-12 (potentially higher). The cost to increase skills depends on the current rank:</p>
-                <Card className="mb-12">
+                <Card className="mb-12" aosDelay="100">
                      <ul className="list-disc list-inside text-neutral-300 space-y-1">
                          <li>Ranks 1–4: 1 XP per rank</li>
                          <li>Ranks 5–8: 2 XP per rank</li>
@@ -245,27 +230,20 @@
                      </ul>
                      <p className="mt-3 text-sm text-neutral-500 italic">Note: The PDF mentions specific skills like Martial Acumen, Pistols, Long Gun, Unarmed, Engineering, Medicine, Negotiation, Business, Aeronautics, Battle Composure but doesn't provide a comprehensive list.</p>
                  </Card>
-        
-        
-                {/* Making Checks Section */}
                 <h3 className="text-2xl font-semibold mb-4 text-red-400">Making Checks</h3>
-                 <Card className="mb-6">
+                 <Card className="mb-6" aosDelay="100">
                     <p className="text-neutral-300 leading-relaxed">When attempting an action where the outcome is uncertain, you typically make a check. The core formula is:</p>
                     <p className="my-3 p-3 bg-neutral-900 rounded text-center font-mono text-red-400 text-lg">Roll 2d6 + Skill Rank + Attribute Modifier</p>
                     <p className="text-neutral-300 leading-relaxed">This total is compared against a Target Number (TN) set by the Game Master (GM) based on difficulty, or against an opponent's check result in an opposed check.</p>
                 </Card>
-                 <Card>
+                 <Card aosDelay="200">
                      <h4 className="font-semibold text-xl text-red-500 mb-2">Opposed Checks</h4>
                     <p className="text-neutral-300 leading-relaxed">When two characters are directly competing (e.g., attacking vs. defending, sneaking vs. detecting), both make a relevant check. The character with the higher result succeeds. Ties often favour the defender or result in a stalemate, depending on the situation.</p>
                  </Card>
             </div>
         );
-        
-        /**
-         * Combat Page Component: Character and Airship Combat Rules & Calculators.
-         */
+
         const CombatPage = () => {
-            // State for Character Combat Calculator
             const [charAttackerSkill, setCharAttackerSkill] = useState(5);
             const [charAttackerAttribute, setCharAttackerAttribute] = useState(6);
             const [charAttackerMight, setCharAttackerMight] = useState(6);
@@ -275,8 +253,6 @@
             const [charDefenderBonus, setCharDefenderBonus] = useState(1);
             const [charDefenderSoak, setCharDefenderSoak] = useState(2);
             const [charCombatResult, setCharCombatResult] = useState(null);
-        
-            // State for Airship Combat Calculator
             const [shipGunnery, setShipGunnery] = useState(4);
             const [shipOfficerMod, setShipOfficerMod] = useState(1);
             const [shipAttackBonus, setShipAttackBonus] = useState(1);
@@ -288,8 +264,7 @@
             const [shipArmor, setShipArmor] = useState(5);
             const [shipCoverBonus, setShipCoverBonus] = useState(0);
             const [shipCombatResult, setShipCombatResult] = useState(null);
-        
-            // Calculation Functions (using useCallback to prevent unnecessary re-renders if passed as props)
+
             const calculateCharacterCombat = useCallback(() => {
                 const attackerAttrMod = getAttributeModifier(charAttackerAttribute);
                 const attackerMightMod = getAttributeModifier(charAttackerMight);
@@ -301,7 +276,7 @@
                 const damageDealt = hit ? Math.max(0, charWeaponDamage + attackerMightMod - charDefenderSoak) : 0;
                 setCharCombatResult({ diceRoll, attackTotal, defenseTN, hit, damageDealt, attackerAttrMod, attackerMightMod, defenderAgiMod });
             }, [charAttackerSkill, charAttackerAttribute, charAttackerMight, charWeaponDamage, charAttackerMods, charDefenderAgility, charDefenderBonus, charDefenderSoak]);
-        
+
             const calculateAirshipCombat = useCallback(() => {
                 const diceRoll = roll2d6();
                 const attackTotal = diceRoll.total + shipGunnery + shipOfficerMod + shipAttackBonus + shipAttackMods;
@@ -310,18 +285,16 @@
                 const damageDealt = hit ? Math.max(0, shipCannonDamage + shipPowerBonus - shipArmor) : 0;
                 setShipCombatResult({ diceRoll, attackTotal, defenseTN, hit, damageDealt });
             }, [shipGunnery, shipOfficerMod, shipAttackBonus, shipCannonDamage, shipPowerBonus, shipAttackMods, shipPilotMod, shipDefenseBonus, shipArmor, shipCoverBonus]);
-        
+
             return (
                 <div data-aos="fade-in">
                     <SectionHeading>Combat</SectionHeading>
                     <p className="text-lg mb-8 text-neutral-300 leading-relaxed">
                         Conflict is inevitable in the skies. Combat follows the core mechanic of opposed checks, with specific rules for attacks, defense, and damage.
                     </p>
-        
-                    {/* Character Combat Rules */}
                     <h3 className="text-2xl font-semibold mb-4 text-red-400">Character Combat</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                         <Card>
+                         <Card aosDelay="100">
                             <h4 className="font-semibold text-xl text-red-500 mb-2">Attacking</h4>
                             <p className="text-neutral-300">Make an opposed check:</p>
                             <p className="my-2 p-2 bg-neutral-900 rounded text-center font-mono text-sm">Attacker: 2d6 + Combat Skill + Attr Mod + Other Mods</p>
@@ -329,29 +302,26 @@
                             <p className="my-2 p-2 bg-neutral-900 rounded text-center font-mono text-sm">Defender: Defense TN</p>
                              <p className="text-neutral-400 text-xs mt-2">Relevant attribute is usually Agility for ranged/finesse, Might for heavy melee.</p>
                         </Card>
-                         <Card>
+                         <Card aosDelay="150">
                             <h4 className="font-semibold text-xl text-red-500 mb-2">Defense</h4>
                             <p className="text-neutral-300">Your base Defense Target Number (TN) is:</p>
                              <p className="my-2 p-2 bg-neutral-900 rounded text-center font-mono text-lg">8 + Agility Mod + Armor/Cover Bonus</p>
                              <p className="text-neutral-400 text-xs mt-2">Actions like "Defend" can temporarily increase this TN.</p>
                          </Card>
-                         <Card>
+                         <Card aosDelay="200">
                             <h4 className="font-semibold text-xl text-red-500 mb-2">Damage</h4>
                             <p className="text-neutral-300">If an attack hits, damage is calculated as:</p>
                              <p className="my-2 p-2 bg-neutral-900 rounded text-center font-mono text-lg">Weapon Damage + Might Mod - Target's Armor Soak</p>
                              <p className="text-neutral-400 text-xs mt-2">Damage cannot be reduced below 0. Armor provides Soak based on its type.</p>
                          </Card>
-                         <Card>
+                         <Card aosDelay="250">
                             <h4 className="font-semibold text-xl text-red-500 mb-2">Wounds & Endurance</h4>
                             <p className="text-neutral-300">Characters have wound thresholds based on Endurance. Exceeding these thresholds imposes penalties or incapacitation. Trauma and recovery are also influenced by Endurance and Med Bay upgrades.</p>
                          </Card>
                     </div>
-        
-                     {/* Character Combat Calculator */}
-                    <Card className="mb-12">
+                    <Card className="mb-12" aosDelay="100">
                         <h4 className="text-xl font-semibold mb-4 text-red-400">Character Combat Calculator</h4>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                            {/* Attacker Inputs */}
                             <div className="space-y-3">
                                 <h5 className="text-lg font-medium text-red-500 border-b border-red-800 pb-1 mb-2">Attacker</h5>
                                 <CalculatorInput id="char-skill" label="Combat Skill (0-12)" value={charAttackerSkill} onChange={(e) => setCharAttackerSkill(Number(e.target.value))} min="0" max="12"/>
@@ -360,7 +330,6 @@
                                 <CalculatorInput id="char-wpn-dmg" label="Weapon Damage" value={charWeaponDamage} onChange={(e) => setCharWeaponDamage(Number(e.target.value))} min="0"/>
                                 <CalculatorInput id="char-atk-mods" label="Other Mods (+/-)" value={charAttackerMods} onChange={(e) => setCharAttackerMods(Number(e.target.value))}/>
                             </div>
-                            {/* Defender Inputs */}
                              <div className="space-y-3">
                                  <h5 className="text-lg font-medium text-red-500 border-b border-red-800 pb-1 mb-2">Defender</h5>
                                  <CalculatorInput id="char-def-agi" label="Defender Agility (1-10)" value={charDefenderAgility} onChange={(e) => setCharDefenderAgility(Number(e.target.value))} min="1" max="10"/>
@@ -371,7 +340,6 @@
                         <div className="mt-6 text-center">
                             <CalculatorButton onClick={calculateCharacterCombat}>Calculate Character Roll</CalculatorButton>
                         </div>
-                        {/* Character Result Display */}
                         {charCombatResult && (
                             <ResultBox>
                                 <p><strong>Dice Roll (2d6):</strong> {charCombatResult.diceRoll.total} ({charCombatResult.diceRoll.rolls.join(' + ')})</p>
@@ -386,39 +354,34 @@
                             </ResultBox>
                         )}
                     </Card>
-        
-                    {/* Airship Combat Rules */}
                     <h3 className="text-2xl font-semibold mb-4 text-red-400 mt-12">Airship Combat</h3>
                      <div className="disclaimer mb-6 !ml-0 !pl-3 !mt-0">
                         Note: Specific airship combat mechanics are not detailed in the draft. The following rules and calculator are plausible interpretations.
                     </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                         <Card>
+                         <Card aosDelay="100">
                             <h4 className="font-semibold text-xl text-red-500 mb-2">Attacking (Estimated)</h4>
                             <p className="text-neutral-300">Likely involves an opposed check using Gunnery skills, officer modifiers, and ship systems (like targeting arrays).</p>
                              <p className="my-2 p-2 bg-neutral-900 rounded text-center font-mono text-sm">Est: 2d6 + Gunnery + Officer Mod + System Bonus vs. Target Defense TN</p>
                          </Card>
-                         <Card>
+                         <Card aosDelay="150">
                             <h4 className="font-semibold text-xl text-red-500 mb-2">Defense (Estimated)</h4>
                             <p className="text-neutral-300">Probably involves a base TN modified by the pilot's skill/modifiers, ship evasion systems, and potentially cover (like clouds).</p>
                             <p className="my-2 p-2 bg-neutral-900 rounded text-center font-mono text-sm">Est. TN: 8 + Pilot Mod + System Bonus + Cover</p>
                          </Card>
-                         <Card>
+                         <Card aosDelay="200">
                             <h4 className="font-semibold text-xl text-red-500 mb-2">Damage (Estimated)</h4>
                             <p className="text-neutral-300">Cannon damage, likely boosted by Power Crystal levels, reduced by the target ship's Armor or Shield systems.</p>
                             <p className="my-2 p-2 bg-neutral-900 rounded text-center font-mono text-sm">Est: Cannon Dmg + Power Bonus - Target Armor</p>
                          </Card>
-                         <Card>
+                         <Card aosDelay="250">
                             <h4 className="font-semibold text-xl text-red-500 mb-2">Targeting Systems</h4>
                             <p className="text-neutral-300">Hits might target specific ship systems (Engines, Weapons, Lift Crystal) causing critical effects beyond simple hull damage.</p>
                          </Card>
                     </div>
-        
-                     {/* Airship Combat Calculator */}
-                     <Card>
+                     <Card aosDelay="100">
                          <h4 className="text-xl font-semibold mb-4 text-red-400">Airship Combat Calculator (Estimated)</h4>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                            {/* Attacking Ship Inputs */}
                             <div className="space-y-3">
                                 <h5 className="text-lg font-medium text-red-500 border-b border-red-800 pb-1 mb-2">Attacking Ship</h5>
                                 <CalculatorInput id="ship-gunnery" label="Gunnery Skill/Bonus" value={shipGunnery} onChange={(e) => setShipGunnery(Number(e.target.value))} min="0"/>
@@ -428,7 +391,6 @@
                                 <CalculatorInput id="ship-power-bonus" label="Power Crystal Dmg Bonus" value={shipPowerBonus} onChange={(e) => setShipPowerBonus(Number(e.target.value))} min="0"/>
                                 <CalculatorInput id="ship-atk-mods" label="Other Attack Mods (+/-)" value={shipAttackMods} onChange={(e) => setShipAttackMods(Number(e.target.value))}/>
                             </div>
-                            {/* Defending Ship Inputs */}
                             <div className="space-y-3">
                                  <h5 className="text-lg font-medium text-red-500 border-b border-red-800 pb-1 mb-2">Defending Ship</h5>
                                  <CalculatorInput id="ship-pilot-mod" label="Pilot Modifier" value={shipPilotMod} onChange={(e) => setShipPilotMod(Number(e.target.value))}/>
@@ -440,7 +402,6 @@
                          <div className="mt-6 text-center">
                             <CalculatorButton onClick={calculateAirshipCombat}>Calculate Airship Roll</CalculatorButton>
                          </div>
-                         {/* Airship Result Display */}
                          {shipCombatResult && (
                             <ResultBox>
                                 <p><strong>Dice Roll (2d6):</strong> {shipCombatResult.diceRoll.total} ({shipCombatResult.diceRoll.rolls.join(' + ')})</p>
@@ -458,11 +419,7 @@
                 </div>
             );
         };
-        
-        
-        /**
-         * Archetypes Page Component: Details about starting character types.
-         */
+
         const ArchetypesPage = () => (
              <div data-aos="fade-in">
                 <SectionHeading>Starting Archetypes</SectionHeading>
@@ -470,31 +427,31 @@
                     Choose a starting archetype that defines your character's background, initial skills, and role within the Cinder Spires world.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                     <Card className="flex flex-col">
+                     <Card className="flex flex-col" aosDelay="100">
                         <h3 className="text-2xl font-semibold mb-3 text-red-400">Spirearch's Guard</h3>
                         <p className="text-neutral-400 mb-4 italic">"We are warriors, not thugs. If we draw blades, it must be for a reason."</p>
                         <p className="text-neutral-300 flex-grow">Formal, precise, and unyielding defenders trained in discipline and swordsmanship. They serve the ruling powers as elite soldiers, bodyguards, duelists, or even political instruments. Often seen as rigid and bound by honor (or the appearance of it).</p>
                         <p className="mt-4 text-sm text-red-300 font-semibold">Required Skills: Unarmed, Martial Acumen</p>
                     </Card>
-                     <Card className="flex flex-col">
+                     <Card className="flex flex-col" aosDelay="150">
                         <h3 className="text-2xl font-semibold mb-3 text-red-400">Fleet Marines</h3>
                         <p className="text-neutral-400 mb-4 italic">"Marines don't ask why. We go where we're pointed."</p>
                         <p className="text-neutral-300 flex-grow">Hardened airship enforcers and boarding troops, often serving aboard naval vessels or merchant ships needing protection. They are the first into the fight and the last to flee, known for their grit, practical combat skills (especially with firearms), and sometimes boisterous camaraderie.</p>
                          <p className="mt-4 text-sm text-red-300 font-semibold">Required Skills: Long Gun, Battle Composure</p>
                    </Card>
-                     <Card className="flex flex-col">
+                     <Card className="flex flex-col" aosDelay="200">
                         <h3 className="text-2xl font-semibold mb-3 text-red-400">Scholars</h3>
                         <p className="text-neutral-400 mb-4 italic">"Knowledge is the only defense against fear. And the world is full of fear."</p>
                         <p className="text-neutral-300 flex-grow">Keepers of knowledge, both sacred and scientific. They might be researchers in spire libraries, engineers maintaining vital systems, medics tending to the crew, or field archaeologists seeking lost lore. They pursue understanding in a world often hostile to it.</p>
                          <p className="mt-4 text-sm text-red-300 font-semibold">Required Skills: Engineering, Medicine</p>
                    </Card>
-                     <Card className="flex flex-col">
+                     <Card className="flex flex-col" aosDelay="250">
                         <h3 className="text-2xl font-semibold mb-3 text-red-400">Merchants</h3>
                         <p className="text-neutral-400 mb-4 italic">"No one is loyal to coin. But everyone listens to it."</p>
                         <p className="text-neutral-300 flex-grow">Brokers of influence, masters of leverage, and navigators of risk. Merchants thrive on trade, information, and social maneuvering. They might be independent traders, agents of a powerful House, or smugglers operating in the gray areas of the law. They know every advantage has its price.</p>
                          <p className="mt-4 text-sm text-red-300 font-semibold">Required Skills: Negotiation, Business</p>
                    </Card>
-                     <Card className="flex flex-col">
+                     <Card className="flex flex-col" aosDelay="300">
                         <h3 className="text-2xl font-semibold mb-3 text-red-400">Aeronauts</h3>
                         <p className="text-neutral-400 mb-4 italic">"...his own heart raced in fierce exaltation in time with her."</p>
                         <p className="text-neutral-300 flex-grow">Living on the edge of storm and steel, aeronauts are the quintessential airship crew. Pilots, navigators, gunners, or daredevil riggers, they are part warrior, part wanderer. Their loyalty is often to their ship and crewmates first. Skill lies in mastering the sky and the vessel they command.</p>
@@ -503,52 +460,42 @@
                 </div>
             </div>
         );
-        
-        /**
-         * Ships & Crew Page Component: Details about ship upgrades and crew strength.
-         */
+
         const ShipsPage = () => (
             <div data-aos="fade-in">
                 <SectionHeading>Ships & Crew</SectionHeading>
                 <p className="text-lg mb-8 text-neutral-300 leading-relaxed">
                     Your airship is more than transport; it's your base, your weapon, and your home. Maintaining and upgrading the ship and crew is vital for survival and success.
                 </p>
-        
-                {/* Upgradable Ship Areas */}
                 <h3 className="text-2xl font-semibold mb-4 text-red-400">Upgradable Ship Areas</h3>
                 <p className="mb-6 text-neutral-400">These areas can be upgraded during downtime, providing passive or active benefits to the crew.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Armory</h4><p>Improved starting equipment for replacement characters.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Med Bay</h4><p>Faster wound recovery and trauma stabilization.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Crew Quarters</h4><p>Boost to XP gain for Intellect-based skills.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Engineering Bay</h4><p>Faster repairs/upgrades; may reduce Engineer TNs.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Crew Lounge</h4><p>Boost to XP gain for Presence-based and merchant skills.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Training Deck</h4><p>Boost to XP gain for combat-related skills.</p></Card>
-                    <Card><h4 className="font-semibold text-xl text-red-500 mb-1">Cargo Hold</h4><p>Generates downtime income or rare upgrade materials.</p></Card>
+                    <Card aosDelay="100"><h4 className="font-semibold text-xl text-red-500 mb-1">Armory</h4><p>Improved starting equipment for replacement characters.</p></Card>
+                    <Card aosDelay="150"><h4 className="font-semibold text-xl text-red-500 mb-1">Med Bay</h4><p>Faster wound recovery and trauma stabilization.</p></Card>
+                    <Card aosDelay="200"><h4 className="font-semibold text-xl text-red-500 mb-1">Crew Quarters</h4><p>Boost to XP gain for Intellect-based skills.</p></Card>
+                    <Card aosDelay="250"><h4 className="font-semibold text-xl text-red-500 mb-1">Engineering Bay</h4><p>Faster repairs/upgrades; may reduce Engineer TNs.</p></Card>
+                    <Card aosDelay="300"><h4 className="font-semibold text-xl text-red-500 mb-1">Crew Lounge</h4><p>Boost to XP gain for Presence-based and merchant skills.</p></Card>
+                    <Card aosDelay="350"><h4 className="font-semibold text-xl text-red-500 mb-1">Training Deck</h4><p>Boost to XP gain for combat-related skills.</p></Card>
+                    <Card aosDelay="400"><h4 className="font-semibold text-xl text-red-500 mb-1">Cargo Hold</h4><p>Generates downtime income or rare upgrade materials.</p></Card>
                 </div>
-        
-                {/* Upgradable Ship Systems */}
                 <h3 className="text-2xl font-semibold mb-4 text-red-400">Upgradable Ship Systems</h3>
                 <p className="mb-6 text-neutral-400">These mechanical systems can be upgraded between missions or after acquiring sufficient resources.</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                     <Card>
+                     <Card aosDelay="100">
                         <h4 className="font-semibold text-xl text-red-500 mb-1">Power Crystal</h4>
                         <p>Increases energy capacity and acceleration. Determines the max allowable cannon and lift upgrades.</p>
                     </Card>
-                     <Card>
+                     <Card aosDelay="150">
                         <h4 className="font-semibold text-xl text-red-500 mb-1">Lift Crystal</h4>
                         <p>Improves climb and dive rates. Upgraded 1:1 with Power Crystal rating.</p>
                     </Card>
-                     <Card>
+                     <Card aosDelay="200">
                         <h4 className="font-semibold text-xl text-red-500 mb-1">Cannons</h4>
                         <p>Upgrade chase or broadside weapons within caps determined by Power Crystal rating.</p>
                     </Card>
-                     {/* Add other systems if mentioned: Engines, Armor, Shields etc. */}
                 </div>
-        
-                 {/* Crew Strength */}
                 <h3 className="text-2xl font-semibold mb-4 text-red-400">Crew Strength & Replacement</h3>
-                 <Card>
+                 <Card aosDelay="100">
                     <p className="text-neutral-300 leading-relaxed mb-3">As your ship and crew gain fame and experience, your Crew Strength increases (starting at 1). This represents overall morale, capability, and survivability.</p>
                      <ul className="list-disc list-inside text-neutral-300 space-y-1">
                          <li>Influenced by reputation and ship upgrades.</li>
@@ -558,26 +505,26 @@
                  </Card>
             </div>
         );
-        
-        
+
+
         // --- Header Component ---
         const Header = ({ currentPage, setCurrentPage }) => {
             const NavLink = ({ page, children }) => (
                 <button
                     onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-2 rounded transition duration-300 ${currentPage === page ? 'text-red-400 font-semibold bg-red-900/30' : 'text-neutral-300 hover:text-red-500 hover:bg-neutral-700/50'}`}
+                    className={`px-3 py-2 rounded transition duration-300 ${currentPage === page ? 'nav-link-active' : 'nav-link-inactive'}`}
                 >
                     {children}
                 </button>
             );
-        
+
             return (
                 <header className="sticky top-0 z-50 w-full shadow-md backdrop-blur-md bg-neutral-900/80">
                     <nav className="container mx-auto px-4 sm:px-6 py-3 flex flex-wrap justify-between items-center">
                         <h1 className="text-2xl font-bold text-red-600 mr-6 cursor-pointer" onClick={() => setCurrentPage('home')}>
                             The Cinder Spires
                         </h1>
-                        <div className="space-x-2 text-sm md:text-base">
+                        <div className="space-x-1 sm:space-x-2 text-sm md:text-base">
                             <NavLink page="home">Home</NavLink>
                             <NavLink page="world">World</NavLink>
                             <NavLink page="mechanics">Mechanics</NavLink>
@@ -589,7 +536,7 @@
                 </header>
             );
         };
-        
+
         // --- Footer Component ---
         const Footer = () => (
             <footer className="bg-neutral-900 py-6 mt-16 border-t border-neutral-700">
@@ -598,91 +545,59 @@
                 </div>
             </footer>
         );
-        
+
         // --- Main App Component ---
         function App() {
-            // State to manage the currently displayed page
             const [currentPage, setCurrentPage] = useState('home');
-        
-            // Initialize Animate on Scroll (AOS)
+
+            // Initialize AOS only once on component mount
             useEffect(() => {
-                // AOS is typically initialized outside React components, but for this single-file example:
                 if (typeof AOS !== 'undefined') {
-                     AOS.init({
-                        once: true, // Whether animation should happen only once - while scrolling down
-                        duration: 600, // values from 0 to 3000, with step 50ms
-                        easing: 'ease-in-out', // default easing for AOS animations
-                     });
+                    AOS.init({ once: true, duration: 600, easing: 'ease-in-out' });
+                } else {
+                    console.warn("AOS library not found."); // Add a warning if AOS isn't loaded
                 }
-                // Refresh AOS when the page changes to ensure new elements animate in
+            }, []);
+
+             // Refresh AOS and scroll to top when the page changes
+             useEffect(() => {
                  if (typeof AOS !== 'undefined') {
-                     AOS.refresh();
+                    // Use setTimeout to allow DOM to update before refreshing AOS
+                    setTimeout(() => AOS.refresh(), 100);
                  }
-            }, [currentPage]); // Re-run effect when currentPage changes
-        
-             // Function to render the correct page based on state
+                 window.scrollTo(0, 0); // Scroll to top
+            }, [currentPage]);
+
+            // Function to render the correct page component based on state
             const renderPage = () => {
                 switch (currentPage) {
-                    case 'world':
-                        return <WorldPage />;
-                    case 'mechanics':
-                        return <MechanicsPage />;
-                    case 'combat':
-                        return <CombatPage />;
-                    case 'archetypes':
-                        return <ArchetypesPage />;
-                     case 'ships':
-                        return <ShipsPage />;
+                    case 'world': return React.createElement(WorldPage);
+                    case 'mechanics': return React.createElement(MechanicsPage);
+                    case 'combat': return React.createElement(CombatPage);
+                    case 'archetypes': return React.createElement(ArchetypesPage);
+                    case 'ships': return React.createElement(ShipsPage);
                     case 'home':
-                    default:
-                        return <HomePage setCurrentPage={setCurrentPage} />;
+                    default: return React.createElement(HomePage, { setCurrentPage: setCurrentPage });
                 }
             };
-        
+
+            // Render the main application structure
             return (
-                // Using React.Fragment shorthand <> to avoid adding extra div to DOM
-                <>
-                    {/* Include Tailwind CSS via CDN for preview environments */}
-                    {/* <script src="https://cdn.tailwindcss.com"></script> */}
-                    {/* Include AOS library */}
-                    {/* <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"> */}
-                    {/* <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script> */}
-        
-                    {/* Basic CSS Reset and Font/Theme setup (handled by Tailwind + inline styles) */}
-                    <style jsx global>{`
-                        body {
-                            font-family: 'Inter', sans-serif;
-                            background-color: #0a0a0a;
-                            color: #e5e5e5;
-                            overflow-x: hidden;
-                        }
-                         body::before { /* Subtle background texture */
-                            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                            background: radial-gradient(ellipse at center, rgba(30, 0, 0, 0.3), rgba(0, 0, 0, 0.8)), url('https://www.transparenttextures.com/patterns/dark-matter.png');
-                            opacity: 0.15; z-index: -1; pointer-events: none;
-                        }
-                         /* Custom scrollbar */
-                        ::-webkit-scrollbar { width: 8px; }
-                        ::-webkit-scrollbar-track { background: #1a1a1a; }
-                        ::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 4px; }
-                        ::-webkit-scrollbar-thumb:hover { background: #b91c1c; }
-                         html { scroll-behavior: smooth; }
-                         /* Calculator Result Box Style */
-                         .result-box strong { color: #f87171; } /* text-red-400 */
-                         /* Disclaimer Style */
-                         .disclaimer {
-                            font-size: 0.8rem; color: #a3a3a3; border-left: 3px solid #dc2626;
-                            padding-left: 0.75rem; margin-top: 1rem; font-style: italic;
-                         }
-                    `}</style>
-        
-                    <Header currentPage={currentPage} setCurrentPage={setCurrentPage} />
-                    <main className="container mx-auto px-4 sm:px-6 py-12 min-h-screen">
-                        {renderPage()}
-                    </main>
-                    <Footer />
-                </>
+                 React.createElement(Fragment, null, // Use Fragment shorthand
+                    React.createElement(Header, { currentPage: currentPage, setCurrentPage: setCurrentPage }),
+                    React.createElement("main", { className: "container mx-auto px-4 sm:px-6 py-12 min-h-screen" }, renderPage()),
+                    React.createElement(Footer, null)
+                 )
             );
+        }
+
+        // --- Render the App to the DOM ---
+        const container = document.getElementById('root');
+        if (container) { // Check if root element exists
+             const root = ReactDOM.createRoot(container);
+             root.render(React.createElement(App));
+        } else {
+            console.error("Root element with ID 'root' not found."); // Add error if root isn't found
         }
 
     </script>
